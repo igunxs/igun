@@ -1,17 +1,19 @@
 <?php
-
+###Original From###
+###https://github.com/osyduck/Gojek-Register###
+//ikiganteng
 function request($url, $token = null, $data = null, $pin = null){
 $header[] = "Host: api.gojekapi.com";
-$header[] = "User-Agent: okhttp/3.10.0";
+$header[] = "User-Agent: okhttp/3.12.1";
 $header[] = "Accept: application/json";
 $header[] = "Accept-Language: en-ID";
 $header[] = "Content-Type: application/json; charset=UTF-8";
-$header[] = "X-AppVersion: 3.30.2";
+$header[] = "X-AppVersion: 3.48.2"; // ubah sesuai clone lu
 $header[] = "X-UniqueId: ".time()."57".mt_rand(1000,9999);
 $header[] = "Connection: keep-alive";
 $header[] = "X-User-Locale: en_ID";
-$header[] = "X-Location: -6.246265,106.690718";
-$header[] = "X-Location-Accuracy: 3.0";
+$header[] = "X-Location: -6.224058,106.877913";
+$header[] = "X-Location-Accuracy: 0.0";
 if ($pin):
 $header[] = "pin: $pin";
     endif;
@@ -64,7 +66,7 @@ function nama()
 function register($no)
     {
     $nama = nama();
-    $email = str_replace(" ", "", $nama) . mt_rand(100, 999);
+    $email = str_replace(" ", "", $nama) . mt_rand(1000, 9999);
     $data = '{"email":"'.$email.'@gmail.com","name":"'.$nama.'","phone":"+'.$no.'","signed_up_country":"ID"}';
     $register = request("/v5/customers", "", $data);
     if ($register['success'] == 1)
@@ -139,6 +141,9 @@ function verif($otp, $token)
     $verif = request("/v5/customers/phone/verify", "", $data);
     if ($verif['success'] == 1)
         {
+		$h=fopen("accgojek2.txt","a");
+		fwrite($h,json_encode($verif)."\n");
+		fclose($h); 
         return $verif['data']['access_token'];
         }
       else
@@ -147,9 +152,10 @@ function verif($otp, $token)
         return false;
         }
     }
-function claim($token)
+
+function claims($token,$voc)
     {
-    $data = '{"promo_code":"GOFOODBOBA07"}';    
+    $data = '{"promo_code":"'.$voc.'"}';    
     $claim = request("/go-promotions/v1/promotions/enrollments", $token, $data);
     if ($claim['success'] == 1)
         {
@@ -161,9 +167,10 @@ function claim($token)
         return false;
         }
     }
+
     function claim1($token)
     {
-    $data = '{"promo_code":"GOFOODBOBA10"}';    
+    $data = '{"promo_code":"GOFOODSANTAI11"}';    
     $claim = request("/go-promotions/v1/promotions/enrollments", $token, $data);
     if ($claim['success'] == 1)
         {
@@ -177,7 +184,7 @@ function claim($token)
     }
     function claim2($token)
     {
-    $data = '{"promo_code":"GOFOODBOBA19"}';    
+    $data = '{"promo_code":"GOFOODSANTAI08"}';    
     $claim = request("/go-promotions/v1/promotions/enrollments", $token, $data);
     if ($claim['success'] == 1)
         {
@@ -219,7 +226,7 @@ function claim($token)
     }
      function pengen($token)
     {
-    $data = '{"promo_code":"JAJANPAKEGOPAY"}';    
+    $data = '{"promo_code":"G-7RCBDYN"}';    
     $claim = request("/go-promotions/v1/promotions/enrollments", $token, $data);
     if ($claim['success'] == 1)
         {
@@ -231,4 +238,46 @@ function claim($token)
         return false;
         }
     }
+
+function reff($token)
+    {
+    $data = '{"referral_code":"G-75SR565"}';    
+    $claim = request("/customer_referrals/v1/campaign/enrolment", $token, $data);
+    if ($claim['success'] == 1)
+        {
+        return $claim['data']['message'];
+        }
+      else
+        {
+      save("error_log.txt", json_encode($claim));
+        return false;
+        }
+    }
+	
+	function cekno($no)
+    {
+	$token = '5993944e-50c7-4f93-bb81-2f2acb206c7a';
+    $claim = request("/wallet/qr-code?phone_number=%2B".$no, $token, null);
+    if ($claim['data'] == null)
+        {
+		return true;
+        }
+      else
+        {
+      return false;
+        }
+    }
+	function food($token)
+	{
+	$claim = request("/v2/customer/cards/food", $token, null);
+$food = json_decode(json_encode($claim));
+foreach($food->data->cards as $item){
+if($item->content->actions[0]->description == "Promo 1"){
+$food = $item->content->actions[0]->deep_link;
+$food = explode("code=", trim($food));
+$food = trim($food[1]);
+return $food;
+	}
+	}
+	}
 ?>
